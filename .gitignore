@@ -16,7 +16,7 @@ env/
 
 # ---- Environment variables ----
 .env
-.env.*    # for cases like .env.dev, .env.prod
+.env.*  
 
 # ---- Logs ----
 *.log
