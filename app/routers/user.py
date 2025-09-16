@@ -20,7 +20,7 @@ async def add_new_user(user: str, password: str, session: Annotated[AsyncSession
     await session.refresh(new_user)
     return new_user
 
-@router.get("/users")
+@router.get("/users", response_model=None)
 async def get_users(token: Annotated[str, Depends(security.get_current_user)]):
     return {"message": "we ar live in users"}
 
