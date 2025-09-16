@@ -3,7 +3,7 @@ from sqlalchemy.orm import declarative_base
 
 
 
-DB_URL = "postgresql+asyncpg://neondb_owner:npg_P2IKyBe9qoWQ@ep-gentle-brook-adnbaddh-pooler.c-2.us-east-1.aws.neon.tech/neondb?ssl=require"
+DB_URL = ""
 
 engine = create_async_engine(DB_URL, echo=False)
 
