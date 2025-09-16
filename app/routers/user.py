@@ -9,6 +9,8 @@ from sqlalchemy.future import select
 from models.user import User
 from core.database import get_session
 
+from core import security
+
 router = APIRouter(tags=["users"])
 
 
@@ -23,7 +25,8 @@ router = APIRouter(tags=["users"])
 
 @router.post("/signup")
 async def add_new_user(user: str, password: str, session: Annotated[AsyncSession, Depends(get_session)]):
-    new_user = User(user_name=user, user_password=password)
+    hashed_password = security.get_passwords_hashed(password)
+    new_user = User(user_name=user, user_password=hashed_password)
     session.add(new_user)
     await session.commit()
     await session.refresh(new_user)
