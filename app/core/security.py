@@ -21,34 +21,34 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def get_passwords_hashed(password: str):
+def get_passwords_hashed(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def check_password(plain_password: str, hased_password: str):
+def check_password(plain_password: str, hased_password: str) -> bool:
     return pwd_context.verify(plain_password, hased_password)
 
 
-async def get_user(session: AsyncSession, username:str):
+async def get_user_from_Db(session: AsyncSession, username:str) -> UserInDB:
     user = await session.execute(select(User).where(User.user_name == username))
     user_db = user.scalar_one_or_none()
     if user_db is None:
         return None
-    return UserInDB(user_name=user_db.user_name, password=user_db.user_password)
+    return UserInDB(user_name=user_db.user_name, password=user_db.user_password, id=user_db.user_id)
 
 
-async def authenticate_user (user_name: str, password: str, session: AsyncSession):
+async def authenticate_user (user_name: str, password: str, session: AsyncSession) -> UserInDB:
     result = await session.execute(select(User).where(User.user_name == user_name))
     user_in_db = result.scalar_one_or_none()
     if user_in_db is None:
         return False
-    user_in_db = UserInDB(user_name=user_in_db.user_name, password=user_in_db.user_password)
+    user_in_db = UserInDB(user_name=user_in_db.user_name, password=user_in_db.user_password, id=user_in_db.user_id)
     if not check_password(password, user_in_db.password):
        return False
     return user_in_db
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None):
+def create_access_token(data: dict, expires_delta: timedelta | None) -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -66,7 +66,7 @@ def decode_toke(token):
     )
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], session: Annotated[AsyncSession, Depends(get_session)]):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], session: Annotated[AsyncSession, Depends(get_session)]) -> UserInDB:
     credential_exception = HTTPException(
         status_code = status.HTTP_401_UNAUTHORIZED,
         detail = "Could not validate credentials",
@@ -81,7 +81,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], sessio
         token_data = TokenData(username=username)
     except InvalidTokenError:
         raise credential_exception
-    user = await get_user(session=session, username=token_data.username)
+    user = await get_user_from_Db(session=session, username=token_data.username)
     if user is None:
         raise credential_exception
     return user

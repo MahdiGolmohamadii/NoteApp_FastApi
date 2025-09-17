@@ -8,6 +8,7 @@ class UserBase(BaseModel):
 
 class UserInDB(UserBase):
     password: str
+    id: int
 
 
 

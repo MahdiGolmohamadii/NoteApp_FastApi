@@ -36,7 +36,7 @@ async def add_new_user(user:Annotated[UserInDB, Body()], session: Annotated[Asyn
             detail=f"an unexpected erro accured: {e}"
         )
 
-@router.get("/users", response_model=UserBase)
+@router.get("/users/me", response_model=UserBase)
 async def get_users(user: Annotated[UserBase, Depends(security.get_current_user)]):
     return user
 
