@@ -34,7 +34,7 @@ async def get_user(session: AsyncSession, username:str):
     user_db = user.scalar_one_or_none()
     if user_db is None:
         return None
-    return UserInDB(user_name=user_db.user_name, password=user_db.user_passwor)
+    return UserInDB(user_name=user_db.user_name, password=user_db.user_password)
 
 
 async def authenticate_user (user_name: str, password: str, session: AsyncSession):
@@ -81,7 +81,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], sessio
         token_data = TokenData(username=username)
     except InvalidTokenError:
         raise credential_exception
-    user = get_current_user(session=session, username=token_data.username)
+    user = await get_user(session=session, username=token_data.username)
     if user is None:
         raise credential_exception
     return user

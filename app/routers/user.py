@@ -5,6 +5,7 @@ from sqlalchemy.future import select
 
 
 from models.user import User
+from schemas.user import UserBase
 from core.database import get_session
 from core import security
 
@@ -20,7 +21,9 @@ async def add_new_user(user: str, password: str, session: Annotated[AsyncSession
     await session.refresh(new_user)
     return new_user
 
-@router.get("/users", response_model=None)
-async def get_users(token: Annotated[str, Depends(security.get_current_user)]):
-    return {"message": "we ar live in users"}
+@router.get("/users", response_model=UserBase)
+async def get_users(user: Annotated[UserBase, Depends(security.get_current_user)]):
+    return user
+
+
 
