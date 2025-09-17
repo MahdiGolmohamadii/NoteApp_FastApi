@@ -10,11 +10,11 @@ from sqlalchemy.future import select
 
 
 from .config import settings
-from.database import get_session
-from schemas.user import UserBase
-from schemas.token import Token, TokenData
-from models.user import User
-from schemas.user import UserInDB
+from .database import get_session
+from ..schemas.user import UserBase
+from ..schemas.token import Token, TokenData
+from ..models.user import User
+from ..schemas.user import UserInDB
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

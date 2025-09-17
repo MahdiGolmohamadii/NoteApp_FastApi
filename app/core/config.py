@@ -1,4 +1,5 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import ConfigDict
 
 class Settings(BaseSettings):
     DB_URL: str
@@ -6,9 +7,10 @@ class Settings(BaseSettings):
     ALGORITHM:str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
-    class Config():
-        env_file = ".env"
-        orm_mode = True
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        from_attributes=True  # orm_mode is now from_attributes
+    )
 
 
 settings = Settings()
