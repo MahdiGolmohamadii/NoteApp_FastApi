@@ -33,7 +33,7 @@ async def get_all_notes(
     
 
 
-@router.post("/notes", response_model=int, status_code=status.HTTP_201_CREATED)
+@router.post("/notes", status_code=status.HTTP_201_CREATED)
 async def add_new_note(
             note_input: Annotated[NoteInput, Body()], 
             user: Annotated[UserInDB, Depends(get_current_user)],
@@ -61,7 +61,7 @@ async def get_one_note(
     )
     note = result.scalar_one_or_none()
     if not note:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="note not found in users notes.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="note not found in users notes.")
     return note
 
 @router.patch("/notes/{note_id}", response_model=NoteOut, status_code=status.HTTP_202_ACCEPTED)
@@ -76,7 +76,7 @@ async def update_note(
     )
     note = result.scalar_one_or_none()
     if not note:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="note not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="note not found")
     if note_update.title is not None:
         note.title = note_update.title
     if note_update.description is not None:
@@ -86,6 +86,20 @@ async def update_note(
     await session.refresh(note)
 
     return note
+
+@router.delete("/notes/{note_id}", status_code=status.HTTP_200_OK)
+async def delete_note(
+                note_id: int, 
+                user: Annotated[UserInDB, Depends(get_current_user)], 
+                session: Annotated[AsyncSession, Depends(get_session)]):
+    
+    result = await session.execute(select(Note).where(Note.note_id == note_id, Note.owner_id == user.id))
+    note = result.scalar_one_or_none()
+    if not note:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="note not found")
+    await session.delete(note)
+    await session.commit()
+    return {"note id deleted:", note.note_id}
 
     
     
