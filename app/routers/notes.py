@@ -4,20 +4,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 
-from ..core.security import get_current_user
-from ..core.database import get_session
-from ..schemas.user import UserInDB
-from ..schemas.notes import NoteInput, NoteOut, NoteUpdate
-from ..models.user import User
-from ..models.notes import Note
+from app.core.security import get_current_user
+from app.core.database import get_session
+from app.schemas.user import UserInDB
+from app.schemas.notes import NoteInput, NoteOut, NoteUpdate
+from app.models.user import User
+from app.models.notes import Note
 
 
 router = APIRouter(tags=["notes"])
 
 
 
-@router.get("/notes")
-async def get_all_notes(user: Annotated[UserInDB, Depends(get_current_user)], session: Annotated[AsyncSession, Depends(get_session)]):
+@router.get("/notes", response_model=list[NoteOut], status_code=status.HTTP_200_OK)
+async def get_all_notes(
+                user: Annotated[UserInDB, Depends(get_current_user)], 
+                session: Annotated[AsyncSession, Depends(get_session)],
+            ):
     result = await session.execute(
         select(User).options(selectinload(User.notes)).where(User.user_name == user.user_name)
     )
@@ -25,15 +28,12 @@ async def get_all_notes(user: Annotated[UserInDB, Depends(get_current_user)], se
     
     if not user_obj:
         return []
-
-    notes_list = [
-        NoteOut(title=note.title, description = note.description, owner_id=note.owner_id) for note in user_obj.notes
-    ]
-    return notes_list
+    
+    return user_obj.notes
     
 
 
-@router.post("/notes")
+@router.post("/notes", response_model=int, status_code=status.HTTP_201_CREATED)
 async def add_new_note(
             note_input: Annotated[NoteInput, Body()], 
             user: Annotated[UserInDB, Depends(get_current_user)],
@@ -50,7 +50,7 @@ async def add_new_note(
     return new_note.note_id
 
 
-@router.get("/notes/{note_id}")
+@router.get("/notes/{note_id}", response_model=NoteOut, status_code=status.HTTP_200_OK)
 async def get_one_note(
             note_id: int, 
             user: Annotated[UserInDB, Depends(get_current_user)], 
@@ -64,7 +64,7 @@ async def get_one_note(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="note not found in users notes.")
     return note
 
-@router.patch("/notes/{note_id}")
+@router.patch("/notes/{note_id}", response_model=NoteOut, status_code=status.HTTP_202_ACCEPTED)
 async def update_note(
                 note_id: int, 
                 user: Annotated[UserInDB, Depends(get_current_user)], 

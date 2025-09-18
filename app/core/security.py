@@ -9,12 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 
-from .config import settings
-from .database import get_session
-from ..schemas.user import UserBase
-from ..schemas.token import Token, TokenData
-from ..models.user import User
-from ..schemas.user import UserInDB
+from app.core.config import settings
+from app.core.database import get_session
+from app.schemas.user import UserBase
+from app.schemas.token import Token, TokenData
+from app.models.user import User
+from app.schemas.user import UserInDB
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

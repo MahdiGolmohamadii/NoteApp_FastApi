@@ -10,5 +10,8 @@ class UserInDB(UserBase):
     password: str
     id: int
 
+class UserLogIn(UserBase):
+    password: str
+
 
 
