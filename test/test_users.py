@@ -14,7 +14,6 @@ from app.schemas.user import UserBase
 
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-# DATABASE_URL = "postgresql+asyncio://neondb_owner:npg_sW7IXicBA1YV@ep-delicate-glade-adtn0kib-pooler.c-2.us-east-1.aws.neon.tech/neondb?ssl=require"
 engine = create_async_engine(DATABASE_URL, echo=False)
 
 AsyncTestSessionLocal = async_sessionmaker(
@@ -94,7 +93,6 @@ async def test_get_user_me():
     ],
 )
 async def test_multiple_get_user_me(username, password, expected_status):
-
 
     await clean_Db()
     
