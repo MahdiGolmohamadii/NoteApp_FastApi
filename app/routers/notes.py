@@ -19,8 +19,7 @@ router = APIRouter(tags=["notes"])
 @router.get("/notes", response_model=list[NoteOut], status_code=status.HTTP_200_OK)
 async def get_all_notes(
                 user: Annotated[UserInDB, Depends(get_current_user)], 
-                session: Annotated[AsyncSession, Depends(get_session)],
-            ):
+                session: Annotated[AsyncSession, Depends(get_session)],):
     result = await session.execute(
         select(User).options(selectinload(User.notes)).where(User.user_name == user.user_name)
     )
@@ -37,8 +36,7 @@ async def get_all_notes(
 async def add_new_note(
             note_input: Annotated[NoteInput, Body()], 
             user: Annotated[UserInDB, Depends(get_current_user)],
-            session: Annotated[AsyncSession, Depends(get_session)]
-            ):
+            session: Annotated[AsyncSession, Depends(get_session)]):
     user_db_row = await session.execute(select(User).where(User.user_name == user.user_name))
     user_db = user_db_row.scalar_one()
     new_note = Note(title = note_input.title, 
@@ -54,8 +52,7 @@ async def add_new_note(
 async def get_one_note(
             note_id: int, 
             user: Annotated[UserInDB, Depends(get_current_user)], 
-            session: Annotated[AsyncSession, Depends(get_session)]
-        ):
+            session: Annotated[AsyncSession, Depends(get_session)]):
     result = await session.execute(
         select(Note).where(Note.note_id == note_id, Note.owner_id == user.id)
     )
@@ -69,8 +66,7 @@ async def update_note(
                 note_id: int, 
                 user: Annotated[UserInDB, Depends(get_current_user)], 
                 session: Annotated[AsyncSession, Depends(get_session)],
-                note_update: Annotated[NoteUpdate, Body()]
-            ):
+                note_update: Annotated[NoteUpdate, Body()]):
     result = await session.execute(
         select(Note).where(Note.note_id==note_id, Note.owner_id==user.id)
     )
@@ -92,7 +88,6 @@ async def delete_note(
                 note_id: int, 
                 user: Annotated[UserInDB, Depends(get_current_user)], 
                 session: Annotated[AsyncSession, Depends(get_session)]):
-    
     result = await session.execute(select(Note).where(Note.note_id == note_id, Note.owner_id == user.id))
     note = result.scalar_one_or_none()
     if not note:
