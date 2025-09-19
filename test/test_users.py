@@ -48,14 +48,14 @@ def test_get_root():
 
 @pytest.mark.asyncio
 async def test_add_new_user():
-    payload = {"user_name": "testuser", "password": "testuser"}
+    payload = {"user_name": "user1", "password": "user1"}
 
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.post("/signup",json=payload)
     assert response.status_code == 200
-    assert response.json() == {"user_name": "testuser"}
+    assert response.json() == {"user_name": "user1"}
 
 
 @pytest.mark.asyncio
