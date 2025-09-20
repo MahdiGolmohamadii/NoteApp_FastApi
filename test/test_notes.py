@@ -16,6 +16,9 @@ from app.core.database import Base
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(DATABASE_URL, echo=False)
 
+VALIDUSER ={"username":"validuser", "password":"validuser"}
+INVALIDUSER = {"username":"notvalid", "password":"notvalid"}
+
 AsyncTestSessionLocal = async_sessionmaker(
     engine,
     class_=AsyncSession,
@@ -32,31 +35,33 @@ async def get_test_session():
     finally:
         await db.close()
 
-@pytest_asyncio.fixture
+
 async def clean_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-    yield
 
-@pytest_asyncio.fixture
-async def async_client(clean_db):
+@pytest_asyncio.fixture(autouse=True, scope="session")
+async def add_user(async_client):
+    payload = {"user_name": VALIDUSER["username"], "password":VALIDUSER["password"]}
+    # payload = VALIDUSER
+    response = await async_client.post("/signup",json=payload)
+    assert response.status_code == 200
+    assert response.json() == {"user_name": VALIDUSER["username"]}
+
+
+@pytest_asyncio.fixture(scope="session")
+async def async_client():
+    await clean_db()
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
 
-@pytest_asyncio.fixture
-async def add_user(async_client):
-    payload = {"user_name": "testuser", "password": "testuser"}
-
-    response = await async_client.post("/signup",json=payload)
-    # assert response.status_code == 200
-    # assert response.json() == {"user_name": "testuser"}
-
 
 
 @pytest_asyncio.fixture
-async def user_token(async_client, add_user):
-    data = {"username": "testuser", "password": "testuser"}
+async def user_token(async_client):
+    # await add_user(async_client=async_client)
+    data = {"username": VALIDUSER["username"], "password": VALIDUSER["password"]}
     response = await async_client.post("/token", data=data)
     assert response.status_code == 200
     return response.json()["access_token"]
