@@ -60,10 +60,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None) -> str:
     return encode_jwt
 
 
-def decode_toke(token):
-    return UserBase(
-        user_name=token+"this should change"
-    )
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], session: Annotated[AsyncSession, Depends(get_session)]) -> UserInDB:
